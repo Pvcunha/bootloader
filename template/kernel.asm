@@ -8,6 +8,7 @@ set_videomode:
     mov ax, 13h
     int 10h
     ret
+
 set_initial_values:
     mov ax, 0A000h ; offset
     mov es, ax ; Guarda no es o valor do offset
@@ -55,35 +56,33 @@ popa
 
 
 
-draw_player: ; (x_begin,y_begin,color) -> dimension 3X9
+;draw_player: ; (x_begin,y_begin,color) -> dimension 3X9
 
-    push bp
-    mov bp, sp
+;    push bp
+;   mov bp, sp
 
+;    mov bx, 
+;    mov cx,0
+;    loop_x:
+;        add bx,cx 
+;        draw_pixel bx, %2, %3
+;        sub bx,cx
+;        inc cx
+;        cmp cx,3 ; 3 = x-dimension 
+;        je loop_x
+;    mov cx,0
+;    mov ax, %2
+;loop_y:
+;    add ax,cx
+;    draw_pixel %1, ax, %3
+;    sub ax, cx
+;    inc cx
+;    cmp cx,9 ; 9 = y-dimension 
+;    je loop_y
 
-
-    mov bx, 
-    mov cx,0
-    loop_x:
-        add bx,cx 
-        draw_pixel bx, %2, %3
-        sub bx,cx
-        inc cx
-        cmp cx,3 ; 3 = x-dimension 
-        je loop_x
-    mov cx,0
-    mov ax, %2
-loop_y:
-    add ax,cx
-    draw_pixel %1, ax, %3
-    sub ax, cx
-    inc cx
-    cmp cx,9 ; 9 = y-dimension 
-    je loop_y
-
-    mov sp, bp
-    pop bp
-    ret
+;    mov sp, bp
+;    pop bp
+;    ret
 
 
 data:
@@ -104,8 +103,14 @@ start:
     mov bx,0
     mov ax,0
     mov dx, 7
-    draw_player bx, ax, dx 
+    
+    draw_pixel 10, 2, 7
 
+    loopMain:
+        draw_pixel bx, ax, dx
+        inc ax
+        inc bx
+        jmp loopMain
 
    
 
