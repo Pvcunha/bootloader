@@ -2,11 +2,17 @@ org 0x7e00
 jmp 0x0000:start
 
 data:
-	ball_x dw 10    ;pos x
-    ball_y dw 10    ;pos y
+
+    ball_init_x dw 110
+    ball_init_y dw 100
+
+	ball_x dw 0    ;pos x
+    ball_y dw 0    ;pos y
     ball_size equ 4     ;tamanho da bola
+    
     pad_size_x equ 3 ; tamanho do pad em x
     pad_size_y equ 9 ; tamanho do pad em y
+    
     aux db 0      ;vai checar o tempo
 
     bs_x dw 5
@@ -54,6 +60,15 @@ clearscreen:
 %endmacro
 
 
+ball_reset:                 ;seta a bola nas posições iniciais 
+    mov ax, [ball_init_x] 
+    mov bx, [ball_init_y]
+
+    mov [ball_x], ax
+    mov [ball_y], bx
+    ret
+
+
 draw_ball:
     mov cx, [ball_x]  ;determina pos inicial da coluna (x)
     mov dx, [ball_y] ;determina posinicial da linha (y)
@@ -80,8 +95,6 @@ draw_ball:
 
     ret
 
-move_ball:
-
 
 collision:
     check_right_collision:
@@ -91,7 +104,8 @@ collision:
         jng check_left_collision
         mov bx, 0
         mov [flag_x], bx  ; Se teve colisão a direita, a flag é 0
-    
+        call ball_reset
+
     check_left_collision:
         mov ax, [ball_x]
         sub ax, ball_size
@@ -99,6 +113,7 @@ collision:
         jnl check_up_collision
         mov bx, 1
         mov [flag_x], bx ; Se teve colisão a esquerda, a flag é 1
+        call ball_reset
 
     check_up_collision:
         mov ax, [ball_y]
@@ -158,6 +173,7 @@ start:
     ;Código do projeto...
     call set_video_mode
 
+    call ball_reset
     check_time:
         call draw_ball
         
