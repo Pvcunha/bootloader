@@ -15,8 +15,8 @@ data:
     
     aux db 0      ;vai checar o tempo
 
-    bs_x dw 5
-    bs_y dw 5
+    bs_x dw 2
+    bs_y dw 2
     flag_x dw 1
     flag_y dw 1
 
@@ -183,8 +183,8 @@ start:
 
         call collision
 
-        delay 1, 100
-        ;delay 0, 0x4000
+        ;delay 1, 100
+        delay 0, 0x4000
         call clearscreen
         jmp check_time
 
