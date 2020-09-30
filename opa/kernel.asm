@@ -7,6 +7,9 @@ data:
     ball_size equ 4     ;tamanho da bola
     aux db 0      ;vai checar o tempo
 
+    bs_x equ 5
+    bs_y equ 5
+
 
 set_video_mode:
     mov ah, 00h     ;transforma para modo video
@@ -18,14 +21,32 @@ set_video_mode:
     int 10h         ;executa a conf
     ret
 
+
+clearscreen:
+    push bp
+    mov bp, sp
+    pusha
+
+    mov ah, 0x07        ; tells BIOS to scroll down window
+    mov al, 0x00        ; clear entire window
+    mov bh, 0        ; white on black
+    mov cx, 0x00        ; specifies top left of screen as (0,0)
+    mov dh, 0x18        ; 18h = 24 rows of chars
+    mov dl, 0x4f        ; 4fh = 79 cols of chars
+    int 0x10        ; calls video interrupt
+
+    popa
+    mov sp, bp
+    pop bp
+    ret
+
+
 %macro delay 2
-	pusha
 	mov cx, %1
 	mov dx, %2
 	
 	mov ah, 86h
 	int 15h
-	popa
 %endmacro
 
 
@@ -56,7 +77,6 @@ draw_ball:
     ret
 
 
-
 start:
     xor ax, ax
     mov ds, ax
@@ -69,9 +89,16 @@ start:
         call draw_ball
     
         mov bx, [ball_x]
-        inc bx
+        add bx, bs_x
         mov [ball_x], bx
+        
+        mov bx, [ball_y]
+        add bx, bs_y
+        mov [ball_y], bx
+
         delay 1, 100
+        ;delay 0, 0x4000
+        call clearscreen
         jmp check_time
 
 
