@@ -5,8 +5,8 @@ data:
 	ball_x dw 10    ;pos x
     ball_y dw 10    ;pos y
     ball_size equ 4     ;tamanho da bola
-    pad_size_x equ 3 ; tamanho do pad em x
-    pad_size_y equ 9 ; tamanho do pad em y
+    pad_size_x equ 2 ; tamanho do pad em x
+    pad_size_y equ 12 ; tamanho do pad em y
     aux db 0      ;vai checar o tempo
 
     bs_x dw 5
@@ -14,6 +14,16 @@ data:
     flag_x dw 1
     flag_y dw 1
 
+%macro move_pad 2 ;
+
+pusha
+push %1
+push %2
+call draw_pad
+add sp, 4
+popa
+
+%endmacro
 
 set_video_mode:
     mov ah, 00h     ;transforma para modo video
@@ -80,7 +90,43 @@ draw_ball:
 
     ret
 
-move_ball:
+ 
+
+draw_pad:
+    push bp ; adiciona o ponteiro na stack
+    mov bp, sp ; assim bp está no inicio da stack
+    ;bp
+    ;return bp+2
+    ;%2 bp+4
+    ;1% bp+6
+    mov cx, [bp+6] ; ponteiro que aponta para x
+    mov dx, [bp+4] ; ponteiro que aponta para y
+
+    pad_loop:
+        mov ah, 0Ch     ;coloca no modo de escrever pixel
+        mov al, 15      ;determina a cor do pixel
+        mov bh, 00h     ;determina o numero da pagina
+        int 10h
+        
+        inc cx          ;incrementa coluna
+        
+        mov ax, cx      ; se cx - pos_x inicial > ball_size então uma linha foi completada 
+        sub ax, [bp+6]
+        cmp ax, pad_size_x
+        jng pad_loop ; se a comparacao nao for maior ele continua o loop horizontal (jump if not greater)
+        
+        mov cx, [bp+6]
+        inc dx              ; se dx - ball_y > ball_size the drawing is complete
+        mov ax, dx
+        sub ax, [bp+4]
+        cmp ax, pad_size_y
+        jng pad_loop     ;se nao for maior passamos para a prox coluna
+
+        mov sp, bp
+        pop bp
+
+    ret
+
 
 
 collision:
@@ -160,6 +206,7 @@ start:
 
     check_time:
         call draw_ball
+        move_pad 317,0
         
         call walk_x ;anda em x
 
