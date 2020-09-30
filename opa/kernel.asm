@@ -3,8 +3,8 @@ jmp 0x0000:start
 
 data:
 
-    ball_init_x dw 110
-    ball_init_y dw 100
+    ball_init_x dw 156
+    ball_init_y dw 96
 
 	ball_x dw 0    ;pos x
     ball_y dw 0    ;pos y
