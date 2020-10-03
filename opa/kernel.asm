@@ -20,7 +20,7 @@ data:
     bar_right_x dw 300    ;pos x
     bar_right_y dw 80    ;pos y
     bar_sizex equ 4     ;tamanho da bola 
-    bar_sizey equ 20
+    bar_sizey equ 40
     
     aux db 0      ;vai checar o tempo
 
