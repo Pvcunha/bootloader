@@ -282,10 +282,40 @@ collision:
         mov bx, 0
         mov [flag_y], bx ; Se teve colisão em baixo, a flag é 0
 
+; maxx1 > minx2 && minx1 < maxx2 && maxy1 > miny2 && miny1 < maxy2
+		; BALL_X + BALL_SIZE > PADDLE_RIGHT_X && BALL_X < PADDLE_RIGHT_X + PADDLE_WIDTH 
+		; && BALL_Y + BALL_SIZE > PADDLE_RIGHT_Y && BALL_Y < PADDLE_RIGHT_Y + PADDLE_HEIGHT
+
+    check_collision_pad_R: 
+        mov ax, [ball_x]
+        add ax, ball_size
+        cmp ax, [bar_right_x]
+        jng check_collision_pad_L
+
+        mov ax, [bar_right_x]
+        add ax, bar_sizex
+        cmp [ball_x], ax
+        jnl check_collision_pad_L
+
+        mov ax, [ball_y]
+        add ax, ball_size
+        cmp ax, [bar_right_y]
+        jng check_collision_pad_L
         
-        
-    moviment_end:
-        ret
+        mov ax, [bar_right_y]
+        add ax, bar_sizey
+        cmp [ball_y], ax
+        jng check_collision_pad_L
+
+        mov bx, 0
+        mov [flag_x], bx
+        call moviment_end
+
+        check_collision_pad_L
+        call moviment_end
+
+        moviment_end:
+            ret
 
 walk_x:
         mov bx, [flag_x]
@@ -323,35 +353,6 @@ walk_y:
         ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
         ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
         
-check_pad_collision:
-
-    check_pad_R_collision:
-        mov ax, [ball_x]
-        add ax, ball_size
-        cmp ax, bar_right_x
-        jng check_padL_collision
-
-        mov ax, [bar_right_x]
-        add ax, bar_sizex
-        cmp [ball_x], ax
-        jnl check_padL_collision
-
-        mov ax, [ball_y]
-        add ax, ball_size
-        cmp ax, bar_right_y
-        jng check_padL_collision
-        
-        mov ax, [bar_right_y]
-        add ax, bar_sizey
-        cmp [ball_y], ax
-        jnl check_padL_collision
-        
-        mov bx, 0
-        mov [flag_x], bx
-
-    check_padL_collision:
-    pad_end:
-        ret    
 
 
 start:
@@ -375,8 +376,6 @@ start:
         call walk_y ;anda em y
         
         call move_bar
-
-        call check_pad_collision    
 
         call collision
 
