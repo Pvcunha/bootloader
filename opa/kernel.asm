@@ -20,10 +20,7 @@ data:
     bar_right_x dw 300    ;pos x
     bar_right_y dw 80    ;pos y
     bar_sizex equ 4     ;tamanho da bola 
-    bar_sizey equ 40
-
-    pad_size_x equ 3 ; tamanho do pad em x
-    pad_size_y equ 9 ; tamanho do pad em y
+    bar_sizey equ 20
     
     aux db 0      ;vai checar o tempo
 
@@ -282,40 +279,10 @@ collision:
         mov bx, 0
         mov [flag_y], bx ; Se teve colisão em baixo, a flag é 0
 
-; maxx1 > minx2 && minx1 < maxx2 && maxy1 > miny2 && miny1 < maxy2
-		; BALL_X + BALL_SIZE > PADDLE_RIGHT_X && BALL_X < PADDLE_RIGHT_X + PADDLE_WIDTH 
-		; && BALL_Y + BALL_SIZE > PADDLE_RIGHT_Y && BALL_Y < PADDLE_RIGHT_Y + PADDLE_HEIGHT
-
-    check_collision_pad_R: 
-        mov ax, [ball_x]
-        add ax, ball_size
-        cmp ax, [bar_right_x]
-        jng check_collision_pad_L
-
-        mov ax, [bar_right_x]
-        add ax, bar_sizex
-        cmp [ball_x], ax
-        jnl check_collision_pad_L
-
-        mov ax, [ball_y]
-        add ax, ball_size
-        cmp ax, [bar_right_y]
-        jng check_collision_pad_L
         
-        mov ax, [bar_right_y]
-        add ax, bar_sizey
-        cmp [ball_y], ax
-        jng check_collision_pad_L
-
-        mov bx, 0
-        mov [flag_x], bx
-        call moviment_end
-
-        check_collision_pad_L
-        call moviment_end
-
-        moviment_end:
-            ret
+        
+    moviment_end:
+        ret
 
 walk_x:
         mov bx, [flag_x]
@@ -353,6 +320,25 @@ walk_y:
         ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
         ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
         
+check_pad_collision:
+
+    check_pad_R_collision:
+        mov ax, [ball_x]
+        add ax, ball_size
+        cmp ax, [bar_right_x]
+        jng pad_end
+
+        mov ax, [bar_right_x]
+        add ax, bar_sizex
+        cmp [ball_x], ax
+        jnl pad_end
+    
+    negmov:
+        mov bx, 0
+        mov [flag_x], bx
+        
+    pad_end:
+        ret    
 
 
 start:
@@ -378,6 +364,8 @@ start:
         call move_bar
 
         call collision
+
+        call check_pad_collision    
 
         ;delay 1, 100
         delay 0, 0x4000
