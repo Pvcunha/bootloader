@@ -14,10 +14,10 @@ data:
     bar_right_init_x dw 306
     ball_left_init_y dw 20
 
-    bar_left_x dw 0    ;pos x
+    bar_left_x dw 10    ;pos x
     bar_left_y dw 80    ;pos y
 
-    bar_right_x dw 306    ;pos x
+    bar_right_x dw 300    ;pos x
     bar_right_y dw 80    ;pos y
     bar_sizex equ 4     ;tamanho da bola 
     bar_sizey equ 40
@@ -347,7 +347,11 @@ check_pad_collision:
         jnl check_padL_collision
         
         mov bx, 0
-        mov [flag_x], bx    
+        mov [flag_x], bx
+
+    check_padL_collision:
+    pad_end:
+        ret    
 
 
 start:
