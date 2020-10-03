@@ -278,13 +278,40 @@ collision:
         mov ax, [ball_y]
         add ax, ball_size
         cmp ax, 200
-        jng moviment_end
+        jng check_padR_collision
         mov bx, 0
         mov [flag_y], bx ; Se teve colisão em baixo, a flag é 0
 
 ;    para checar se a bola esta batendo na barra, temos:
         ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
         ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
+        
+    check_padR_collision:
+        mov ax, [ball_x]
+        add ax, ball_size
+        cmp ax, bar_right_x
+        jng check_padL_collision
+
+        mov ax, [bar_right_x]
+        add ax, bar_sizex
+        cmp [ball_x], ax
+        jnl check_padL_collision
+
+        mov ax, [ball_y]
+        add ax, ball_size
+        cmp ax, bar_right_y
+        jng check_padL_collision
+        
+        mov ax, [bar_right_y]
+        add ax, bar_sizey
+        cmp [ball_y], ax
+        jnl check_padL_collision
+        
+        mov bx, 0
+        mov [flag_x], bx
+        
+
+    check_padL_collision:
         
         
     moviment_end:
