@@ -326,16 +326,51 @@ check_pad_collision:
         mov ax, [ball_x]
         add ax, ball_size
         cmp ax, [bar_right_x]
-        jng pad_end
+        jng check_pad_L_collision
 
         mov ax, [bar_right_x]
         add ax, bar_sizex
         cmp [ball_x], ax
-        jnl pad_end
-    
+        jnl check_pad_L_collision
+
+        mov ax, [ball_y]
+        add ax, ball_size
+        cmp ax, [bar_right_y]
+        jng check_pad_L_collision
+
+        mov ax, [bar_right_y]
+        add ax, bar_sizey
+        cmp [ball_y], ax
+        jnl check_pad_L_collision
+
     negmov:
         mov bx, 0
         mov [flag_x], bx
+
+    check_pad_L_collision: 
+        mov ax, [ball_x]
+        add ax, ball_size
+        cmp ax, [bar_left_x]
+        jng pad_end
+
+        mov ax, [bar_left_x]
+        add ax, bar_sizex
+        cmp [ball_x], ax
+        jnl pad_end
+
+        mov ax, [ball_y]
+        add ax, ball_size
+        cmp ax, [bar_left_y]
+        jng pad_end
+
+        mov ax, [bar_left_y]
+        add ax, bar_sizey
+        cmp [ball_y], ax
+        jnl pad_end
+
+    negmovleft:
+        mov bx, 1
+        mov [flag_x],bx
         
     pad_end:
         ret    
