@@ -282,39 +282,10 @@ collision:
         mov bx, 0
         mov [flag_y], bx ; Se teve colisão em baixo, a flag é 0
 
-;   Para checar se a bola colide com o paddle direito    
-        ;maxx1 > minx2 && minx1 < maxx2 && maxy1 > miny1 && miny1 < maxy2
-            ;BALL_X + BALL_SIZE > PADDLE_RIGHT_X && BALL_X < PADDLE_RIGHT_X + PADDLE_WIDTH  
-            ;&& BALL_Y + BALL_SIZE > PADDLE_RIGHT_Y && BALL_Y < PADDLE_RIGHT_Y + PADDLE_HEIGHT
-            ;(ball x e y sao as posiçoes da bola)
-
-    chek_right_paddle_collision:
-    
-        mov ax, ball_x
-        add ax, ball_size
-        cmp ax, bar_right_x
-        jng chek_left_paddle_collision ;if there's no collision check for the left paddle collisions
-		
-        mov ax, bar_right_x
-        add ax, bar_sizex
-        cmp ball_x, ax
-        jnl check_left_paddle_collision ;if there's no collision check for the left paddle collisions
-
-        mov ax, ball_y
-        add ax, ball_size
-        cmp ax, bar_right_y
-        jng check_left_paddle_collision ;if there's no collision check for the left paddle collisions
-
-        mov ax, bar_right_y
-        add ax, bar_sizey
-        cmp ball_y, ax
-        jnl check_left_paddle_collision;if there's no collision check for the left paddle collisions
-
-;       Se chegou a esse ponto, houve a colisao com a barra direita !
-        mov bx, 0
-        mov flag_x, bx  ; Se teve colisão a direita, a flag é 0
+;    para checar se a bola esta batendo na barra, temos:
+        ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
+        ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
         
-    chek_left_paddle_collision:
         
     moviment_end:
         ret
