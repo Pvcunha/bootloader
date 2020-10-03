@@ -278,40 +278,10 @@ collision:
         mov ax, [ball_y]
         add ax, ball_size
         cmp ax, 200
-        jng check_padR_collision
+        jng moviment_end
         mov bx, 0
         mov [flag_y], bx ; Se teve colisão em baixo, a flag é 0
 
-;    para checar se a bola esta batendo na barra, temos:
-        ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
-        ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
-        
-    check_padR_collision:
-        mov ax, [ball_x]
-        add ax, ball_size
-        cmp ax, bar_right_x
-        jng check_padL_collision
-
-        mov ax, [bar_right_x]
-        add ax, bar_sizex
-        cmp [ball_x], ax
-        jnl check_padL_collision
-
-        mov ax, [ball_y]
-        add ax, ball_size
-        cmp ax, bar_right_y
-        jng check_padL_collision
-        
-        mov ax, [bar_right_y]
-        add ax, bar_sizey
-        cmp [ball_y], ax
-        jnl check_padL_collision
-        
-        mov bx, 0
-        mov [flag_x], bx
-        
-
-    check_padL_collision:
         
         
     moviment_end:
@@ -349,6 +319,37 @@ walk_y:
     walk_y_end:
         ret
 
+;    para checar se a bola esta batendo na barra, temos:
+        ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
+        ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
+        
+check_pad_collision:
+
+    check_pad_R_collision:
+        mov ax, [ball_x]
+        add ax, ball_size
+        cmp ax, bar_right_x
+        jng check_padL_collision
+
+        mov ax, [bar_right_x]
+        add ax, bar_sizex
+        cmp [ball_x], ax
+        jnl check_padL_collision
+
+        mov ax, [ball_y]
+        add ax, ball_size
+        cmp ax, bar_right_y
+        jng check_padL_collision
+        
+        mov ax, [bar_right_y]
+        add ax, bar_sizey
+        cmp [ball_y], ax
+        jnl check_padL_collision
+        
+        mov bx, 0
+        mov [flag_x], bx    
+
+
 start:
     xor ax, ax
     mov ds, ax
@@ -368,9 +369,10 @@ start:
         call walk_x ;anda em x
 
         call walk_y ;anda em y
-
-        call move_bar
         
+        call move_bar
+
+        call check_pad_collision    
 
         call collision
 
