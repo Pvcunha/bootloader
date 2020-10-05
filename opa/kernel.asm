@@ -27,9 +27,11 @@ data:
     win_left dw 0
     win_right dw 0
     msg_win_right db 'Right player won!', 0 ;Zero no final equivale a null
-    len_msg_win_right db $-msg_win_right
     msg_win_left db 'Left player won!', 0
-    len_msg_win_left db $-msg_win_left
+    title db 'PONGUI', 0
+    instruction db 'Press W to start', 0
+    instruction_2 db 'MOVEMENT KEYS', 0
+    ruless db 'Left player : W,S --- Right player : O,L$'
     
     aux db 0      ;vai checar o tempo
 
@@ -78,12 +80,13 @@ clearscreen:
 	int 15h
 %endmacro
 
-putchar:
-    mov ah, 0eh; modo para imprimir na tela
-    mov bl, 15
-    int 10h; imprime o que está em al
-    ret
 
+
+%macro putc 1
+    mov bl, %1
+    mov ah, 0eh
+    int 10h
+%endmacro
 
 ball_reset:                 ;seta a bola nas posições iniciais 
     mov ax, [ball_init_x] 
@@ -438,6 +441,7 @@ display_win:
     display_win_right:
         ;Printa a string
         mov  si, msg_win_right
+        ;Move cursor pro meio da tela
         mov cl,0
         mov ah, 02h
         mov bh, 0
@@ -448,7 +452,7 @@ display_win:
             lodsb
             cmp al,0 
             je end_display
-            call putchar
+            putc 15
             jmp display_loop_right
 
 
@@ -467,12 +471,34 @@ display_win:
             lodsb
             cmp al,0 
             je end_display
-            call putchar
+            putc 15
             jmp display_loop_left
 
 
     end_display:
         ret
+
+reset_all:
+    mov ax, 0
+    mov [win_left], ax
+    mov [win_right], ax
+    mov [score_left], ax
+    mov [score_right], ax
+    mov ax, 40
+    mov [bar_sizey_left], ax
+    mov [bar_sizey_right], ax
+    mov ax, 156
+    mov bx, 96
+    mov [ball_init_x], ax
+    mov [ball_init_y], bx
+    mov ax, 80
+    mov [bar_right_y], ax
+    mov [bar_left_y],ax 
+
+
+    ret
+
+
 
 
 start:
@@ -483,31 +509,114 @@ start:
     ;Código do projeto...
     call set_video_mode
 
-    call ball_reset
-    check_time:
-        call draw_ball
+    menu:
+        mov si, title
+        mov cl,0
+        mov ah, 02h
+        mov bh, 0
+        mov dh, 5
+        mov dl, 17
+        int 10h
 
-        call draw_bar_left
-
-        call draw_bar_right
+        loop_title:
+            lodsb
+            cmp al,0
+            je instruction_procedure
+            putc 10
+            jmp loop_title
         
-        call walk_x ;anda em x
+        instruction_procedure:
+            mov si, instruction
+            mov cl,0
+            mov ah, 02h
+            mov bh, 0
+            mov dh, 11
+            mov dl, 12
+            int 10h
 
-        call walk_y ;anda em y
+            loop_instruction_start:
+                lodsb
+                cmp al, 0
+                je instruction_msg
+                putc 14
+                jmp loop_instruction_start
         
-        call move_bar
+        instruction_msg:
+        mov si, instruction_2
+            mov cl,0
+            mov ah, 02h
+            mov bh, 0
+            mov dh, 15
+            mov dl, 14
+            int 10h
 
-        call collision
+            loop_instruction_msg:
+                lodsb
+                cmp al, 0
+                je rules
+                putc 14
+                jmp loop_instruction_msg
 
-        call check_pad_collision
-        ;delay 1, 100
-        delay 0, 0x4000
-        call clearscreen
-        mov ax, [win_left]
-        mov bx, [win_right]
-        cmp ax,bx
-        je check_time
-        call display_win
+        rules:
+            mov si, ruless
+            mov cl,0
+            mov ah, 02h
+            mov bh, 0
+            mov dh, 18
+            mov dl, 0
+            int 10h
+
+            loop_rules:
+                lodsb
+                cmp al, '$'
+                je wait_to_press
+                putc 14
+                jmp loop_rules
+
+            
+
+
+
+    wait_to_press:
+        mov ah, 00h
+        int 16h
+        cmp al,'w'
+        jne wait_to_press
+        
+
+        
+
+    outer_gameloop:
+
+        call ball_reset
+        inner_gameloop:
+            call draw_ball
+
+            call draw_bar_left
+
+            call draw_bar_right
+            
+            call walk_x ;anda em x
+
+            call walk_y ;anda em y
+            
+            call move_bar
+
+            call collision
+
+            call check_pad_collision
+            ;delay 1, 100
+            delay 0, 0x4000
+            call clearscreen
+            mov ax, [win_left]
+            mov bx, [win_right]
+            cmp ax,bx
+            je inner_gameloop
+            call display_win
+            delay 50,000
+            call clearscreen
+            call reset_all
+            jmp menu
 
 
 
