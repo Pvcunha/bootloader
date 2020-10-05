@@ -20,7 +20,16 @@ data:
     bar_right_x dw 300    ;pos x
     bar_right_y dw 80    ;pos y
     bar_sizex equ 4     ;tamanho da bola 
-    bar_sizey equ 40
+    bar_sizey_right dw 40
+    bar_sizey_left dw 40
+    score_right dw 0
+    score_left dw 0
+    win_left dw 0
+    win_right dw 0
+    msg_win_right db 'Right player won!', 0 ;Zero no final equivale a null
+    len_msg_win_right db $-msg_win_right
+    msg_win_left db 'Left player won!', 0
+    len_msg_win_left db $-msg_win_left
     
     aux db 0      ;vai checar o tempo
 
@@ -69,6 +78,12 @@ clearscreen:
 	int 15h
 %endmacro
 
+putchar:
+    mov ah, 0eh; modo para imprimir na tela
+    mov bl, 15
+    int 10h; imprime o que está em al
+    ret
+
 
 ball_reset:                 ;seta a bola nas posições iniciais 
     mov ax, [ball_init_x] 
@@ -76,6 +91,41 @@ ball_reset:                 ;seta a bola nas posições iniciais
 
     mov [ball_x], ax
     mov [ball_y], bx
+    ret
+
+update_game_left:
+
+    mov ax, [score_left]
+    add ax, 1
+    mov [score_left], ax
+    cmp ax,5
+    jne end_left
+    mov ax, 1
+    mov [win_left], ax
+
+    end_left:
+    mov ax,[bar_sizey_right]
+    sub ax, 8
+    mov [bar_sizey_right],ax
+
+    ret
+
+
+update_game_right:
+    
+    mov ax, [score_right]
+    add ax, 1
+    mov [score_right], ax
+    cmp ax,5
+    jne end_right
+    mov ax, 1
+    mov [win_right], ax
+
+    end_right:
+    mov ax,[bar_sizey_left]
+    sub ax, 8
+    mov [bar_sizey_left],ax
+
     ret
 
 
@@ -126,7 +176,7 @@ draw_bar_left:
         inc dx              ; se dx - ball_y > ball_size the drawing is complete
         mov ax, dx
         sub ax, [bar_left_y]
-        cmp ax, bar_sizey
+        cmp ax,[bar_sizey_left]
         jng horizontal_loop1     ;se nao for maior passamos para a prox coluna
 
     ret
@@ -152,7 +202,7 @@ draw_bar_right:
         inc dx              ; se dx - ball_y > ball_size the drawing is complete
         mov ax, dx
         sub ax, [bar_right_y]
-        cmp ax, bar_sizey
+        cmp ax, [bar_sizey_right]
         jng horizontal_loop2     ;se nao for maior passamos para a prox coluna
 
     ret
@@ -193,7 +243,7 @@ move_bar:
         add [bar_left_y],ax
         mov ax,200
         sub ax,3
-        sub ax,bar_sizey
+        sub ax,[bar_sizey_left]
         cmp [bar_left_y],ax
         jg  fix_bar_left_bottom
         jmp bar_right_check_movement
@@ -232,7 +282,7 @@ move_bar:
         
             mov ax,200
             sub ax,3
-            sub ax,bar_sizey
+            sub ax,[bar_sizey_right]
             cmp [bar_right_y],ax
             jg fix_padle_right_bottom
             jmp exit_mov
@@ -254,6 +304,7 @@ collision:
         mov bx, 0
         mov [flag_x], bx  ; Se teve colisão a direita, a flag é 0
         call ball_reset
+        call update_game_left
 
     check_left_collision:
         mov ax, [ball_x]
@@ -263,6 +314,7 @@ collision:
         mov bx, 1
         mov [flag_x], bx ; Se teve colisão a esquerda, a flag é 1
         call ball_reset
+        call update_game_right
 
     check_up_collision:
         mov ax, [ball_y]
@@ -318,7 +370,9 @@ walk_y:
 
 ;    para checar se a bola esta batendo na barra, temos:
         ;(Bola_x + tam_bola > barra_x && Bola_x < (barra_x + tam_barra)
-        ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam     
+        ;&& bola_y + tam_bola > barra_y && bola_y < barra_y + barra_tam
+
+    
         
 check_pad_collision:
 
@@ -339,7 +393,7 @@ check_pad_collision:
         jng check_pad_L_collision
 
         mov ax, [bar_right_y]
-        add ax, bar_sizey
+        add ax, [bar_sizey_right]
         cmp [ball_y], ax
         jnl check_pad_L_collision
 
@@ -364,7 +418,7 @@ check_pad_collision:
         jng pad_end
 
         mov ax, [bar_left_y]
-        add ax, bar_sizey
+        add ax, [bar_sizey_left]
         cmp [ball_y], ax
         jnl pad_end
 
@@ -374,6 +428,51 @@ check_pad_collision:
         
     pad_end:
         ret    
+
+display_win:
+    mov al,[win_left]
+    mov bl,[win_right]
+    mov cl, 1
+    cmp al,cl
+    je display_win_left
+    display_win_right:
+        ;Printa a string
+        mov  si, msg_win_right
+        mov cl,0
+        mov ah, 02h
+        mov bh, 0
+        mov dh, 10
+        mov dl, 12
+        int 10h 
+        display_loop_right:
+            lodsb
+            cmp al,0 
+            je end_display
+            call putchar
+            jmp display_loop_right
+
+
+    display_win_left:
+        cli
+        mov  si, msg_win_left
+        ;Move o cursor para o meio da tela
+        mov cl,0
+        mov ah, 02h
+        mov bh, 0
+        mov dh, 10
+        mov dl, 12
+        int 10h 
+
+        display_loop_left:
+            lodsb
+            cmp al,0 
+            je end_display
+            call putchar
+            jmp display_loop_left
+
+
+    end_display:
+        ret
 
 
 start:
@@ -400,12 +499,16 @@ start:
 
         call collision
 
-        call check_pad_collision    
-
+        call check_pad_collision
         ;delay 1, 100
         delay 0, 0x4000
         call clearscreen
-        jmp check_time
+        mov ax, [win_left]
+        mov bx, [win_right]
+        cmp ax,bx
+        je check_time
+        call display_win
+
 
 
 jmp $
