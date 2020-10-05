@@ -498,18 +498,7 @@ reset_all:
 
     ret
 
-
-
-
-start:
-    xor ax, ax
-    mov ds, ax
-    mov es, ax
-    
-    ;Código do projeto...
-    call set_video_mode
-
-    menu:
+menu:
         mov si, title
         mov cl,0
         mov ah, 02h
@@ -573,19 +562,24 @@ start:
                 putc 14
                 jmp loop_rules
 
-            
+        wait_to_press:
+            mov ah, 00h
+            int 16h
+            cmp al,'w'
+            jne wait_to_press
+            call outer_gameloop
+                
 
 
 
-    wait_to_press:
-        mov ah, 00h
-        int 16h
-        cmp al,'w'
-        jne wait_to_press
-        
-
-        
-
+start:
+    xor ax, ax
+    mov ds, ax
+    mov es, ax
+    
+    ;Código do projeto...
+    call set_video_mode
+    call menu
     outer_gameloop:
 
         call ball_reset
@@ -616,7 +610,7 @@ start:
             delay 50,000
             call clearscreen
             call reset_all
-            jmp menu
+            call menu
 
 
 
